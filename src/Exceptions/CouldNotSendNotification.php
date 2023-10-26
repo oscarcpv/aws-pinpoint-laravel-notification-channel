@@ -1,11 +1,15 @@
 <?php
 
-namespace NotificationChannels\:channel_namespace\Exceptions;
+namespace NotificationChannels\AwsPinpoint\Exceptions;
 
-class CouldNotSendNotification extends \Exception
+use Exception;
+
+class CouldNotSendNotification extends Exception
 {
-    public static function serviceRespondedWithAnError($response)
+    public static function serviceRespondedWithAnError(Exception $exception): self
     {
-        return new static("Descriptive error message.");
+        return new self(
+            "AWS Pinpoint service error {$exception->getCode()}: {$exception->getMessage()}"
+        );
     }
 }

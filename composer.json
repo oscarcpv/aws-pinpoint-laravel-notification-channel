@@ -1,38 +1,42 @@
 {
-    "name": "laravel-notification-channels/:package_name",
-    "description": ":package_description",
-    "homepage": "https://github.com/laravel-notification-channels/:package_name",
+    "name": "oscarcpv/aws-pinpoint-laravel-notification-channel",
+    "description": "This package makes it easy to send notifications using AWS Pinpoint with Laravel.",
+    "homepage": "https://github.com/oscarcpv/aws-pinpoint-laravel-notification-channel",
     "license": "MIT",
     "authors": [
         {
-            "name": ":author_name",
-            "email": ":author_email",
-            "homepage": ":author_website",
+            "name": "Oscar Poemape",
+            "email": "oscarcast.opv@gmail.com",
+            "homepage": "https://github.com/oscarcpv",
             "role": "Developer"
         }
     ],
     "require": {
-        "php": ">=7.2",
-        "illuminate/notifications": "~6.0 || ~7.0 || ~8.0",
-        "illuminate/support": "~6.0 || ~7.0 || ~8.0"
+        "php": ">=7.4",
+        "aws/aws-sdk-php-laravel": "^3.8",
+        "illuminate/notifications": "~8.0 || ~9.0 || ~10.0",
+        "illuminate/support": "~8.0 || ~9.0 || ~10.0"
     },
     "require-dev": {
-        "mockery/mockery": "^1.0",
-        "phpunit/phpunit": "^9.0"
+        "laravel/pint": "^1.13",
+        "orchestra/testbench": "^8.13",
+        "phpstan/phpstan": "^1.10"
     },
     "autoload": {
         "psr-4": {
-            "NotificationChannels\\:channel_namespace\\": "src"
+            "NotificationChannels\\AwsPinpoint\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "NotificationChannels\\:channel_namespace\\Test\\": "tests"
+            "NotificationChannels\\AwsPinpoint\\Test\\": "tests"
         }
     },
     "scripts": {
-        "test": "phpunit",
-        "test:coverage": "phpunit --coverage-text --coverage-clover=coverage.clover"
+        "test": "vendor/bin/phpunit",
+        "test:coverage": "vendor/bin/phpunit --coverage-text --coverage-clover=coverage.clover",
+        "pint": "vendor/bin/pint",
+        "analyse": "vendor/bin/phpstan analyse"
     },
     "config": {
         "sort-packages": true
