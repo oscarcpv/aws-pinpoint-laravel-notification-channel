@@ -1,29 +1,13 @@
-Please see [this repo](https://github.com/laravel-notification-channels/channels) for instructions on how to submit a channel proposal.
+# AWS Pinpoint Laravel Notification Channel
 
-# A Boilerplate repo for contributions
+This package makes it easy to send notifications using [AWS Pinpoint](https://aws.amazon.com/pinpoint) with Laravel.
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/laravel-notification-channels/:package_name.svg?style=flat-square)](https://packagist.org/packages/laravel-notification-channels/:package_name)
-[![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
-[![Build Status](https://img.shields.io/travis/laravel-notification-channels/:package_name/master.svg?style=flat-square)](https://travis-ci.org/laravel-notification-channels/:package_name)
-[![StyleCI](https://styleci.io/repos/:style_ci_id/shield)](https://styleci.io/repos/:style_ci_id)
-[![SensioLabsInsight](https://img.shields.io/sensiolabs/i/:sensio_labs_id.svg?style=flat-square)](https://insight.sensiolabs.com/projects/:sensio_labs_id)
-[![Quality Score](https://img.shields.io/scrutinizer/g/laravel-notification-channels/:package_name.svg?style=flat-square)](https://scrutinizer-ci.com/g/laravel-notification-channels/:package_name)
-[![Code Coverage](https://img.shields.io/scrutinizer/coverage/g/laravel-notification-channels/:package_name/master.svg?style=flat-square)](https://scrutinizer-ci.com/g/laravel-notification-channels/:package_name/?branch=master)
-[![Total Downloads](https://img.shields.io/packagist/dt/laravel-notification-channels/:package_name.svg?style=flat-square)](https://packagist.org/packages/laravel-notification-channels/:package_name)
-
-This package makes it easy to send notifications using [:service_name](link to service) with Laravel 5.5+, 6.x and 7.x
-
-**Note:** Replace ```:channel_namespace``` ```:service_name``` ```:author_name``` ```:author_username``` ```:author_website``` ```:author_email``` ```:package_name``` ```:package_description``` ```:style_ci_id``` ```:sensio_labs_id``` with their correct values in [README.md](README.md), [CHANGELOG.md](CHANGELOG.md), [CONTRIBUTING.md](CONTRIBUTING.md), [LICENSE.md](LICENSE.md), [composer.json](composer.json) and other files, then delete this line.
-**Tip:** Use "Find in Path/Files" in your code editor to find these keywords within the package directory and replace all occurences with your specified term.
-
-This is where your description should go. Add a little code example so build can understand real quick how the package can be used. Try and limit it to a paragraph or two.
-
-
+Only SMS is supported for now. However, any contribution that helps support other types of messages is welcome.
 
 ## Contents
 
 - [Installation](#installation)
-	- [Setting up the :service_name service](#setting-up-the-:service_name-service)
+	- [Setting up the AWS Pinpoint service](#setting-up-the-AWS-Pinpoint-service)
 - [Usage](#usage)
 	- [Available Message methods](#available-message-methods)
 - [Changelog](#changelog)
@@ -35,20 +19,129 @@ This is where your description should go. Add a little code example so build can
 
 
 ## Installation
+Use composer to install the package:
+```
+composer require oscarcpv/aws-pinpoint-laravel-notification-channel
+```
 
-Please also include the steps for any third-party service setup that's required for this package.
+### Setting up the AWS Pinpoint service
 
-### Setting up the :service_name service
+First, you need to add your credentials to `config/services.php` file:
 
-Optionally include a few steps how users can set up the service.
+```php
+<?php
+
+return [
+    
+    //...
+
+    'aws_pinpoint' => [
+        'region' => env('AWS_PINPOINT_REGION', 'us-east-1'),
+        'key' => env('AWS_PINPOINT_KEY'),
+        'secret' => env('AWS_PINPOINT_SECRET'),
+        'application_id' => env('AWS_PINPOINT_APPLICATION_ID'),
+        'sms' => [
+            'sender_id' => env('AWS_PINPOINT_SMS_SENDER_ID')
+        ],
+    ],
+];
+```
+
+Now, you need to add the following entries in your `.env` file
+
+```
+AWS_PINPOINT_REGION=your-aws-region
+AWS_PINPOINT_KEY=your-aws-pinpoint-key
+AWS_PINPOINT_SECRET=your-aws-pinpoint-secret
+AWS_PINPOINT_APPLICATION_ID=your-aws-pinpoint-application-id
+AWS_PINPOINT_SMS_SENDER_ID=your-sms-sender-id
+```
 
 ## Usage
 
-Some code examples, make it clear how to use the package
+In your Notification class, you must include the channel in the via method:
+```php
+use NotificationChannels\AwsPinpointChannel;
+
+/**
+ * Get the notification's delivery channels.
+ *
+ * @return array<int, string>
+ */
+public function via($notifiable)
+{
+    return ['broadcast', AwsPinpointChannel:class];
+} 
+```
+
+Then, add the `toAwsPinpoint` method:
+
+```php
+use NotificationChannels\AwsPinpointMessage;
+
+/**
+ * Send SMS via AWS Pinpoint
+ */
+public function toAwsPinpoint($notifiable)
+{
+    return (new AwsPinpointMessage)
+        ->body('Something cool')
+        ->recipients($notifiable->phone)
+        ->promotional();
+} 
+```
+
+You can also define `routeNotificationForAwsPinpoint` method in the Model that uses Notifiable trait to define the recipient or recipients:
+```php
+use Illuminate\Notifications\Notifiable;
+
+class User extends Model
+{
+    use Notifiable;
+
+    /**
+     * Route notifications for the AWS Pinpoint channel.
+     *
+     * @return array|string|int
+     */
+    public function routeNotificationForAWSPinpoint()
+    {
+        return $this->phone;
+    }
+}
+```
+
+Then, you can define your `toAwsPinpoint` method like this:
+
+```php
+use NotificationChannels\AwsPinpointMessage;
+
+/**
+ * Send SMS via AWS Pinpoint
+ */
+public function toAwsPinpoint($notifiable)
+{
+    return new AwsPinpointMessage("Something cool");
+} 
+```
+
+You have available these events, for which you are free to implement listeners:
+- `NotificationChannels\AwsPinpoint\Events\DeliverySuccessfull`: Is disptached after the message is sent successfully.
+- `NotificationChannels\AwsPinpoint\Events\DeliveryFailed`: Is dispatched if the message could not sent successfully.
+
+Both events receive the following parameters:
+- `mixed $recipient`: The recipient the message was sent to. This parameter can be a string, an array or an integer. 
+- `mixed $deliveryStatus`: The delivery status returned by AWS Pinpoint. This parameter is a string that represents the delivery status of the message. See [AWS Pinpoint Docs](https://docs.aws.amazon.com/pinpoint/latest/apireference/apps-application-id-messages.html#apps-application-id-messages-prop-messageresponse-result) for more details about this.
+- `mixed $statusMessage`: The status message returned by AWS Pinpoint. This parameter is a string that contains a message describing the delivery status of the message. [AWS Pinpoint Docs](https://docs.aws.amazon.com/pinpoint/latest/apireference/apps-application-id-messages.html#apps-application-id-messages-prop-messageresponse-result) for more details about this.
 
 ### Available Message methods
+When you instance the `NotificationChannels\AwsPinpoint\AwsPinpointMessage` you have available this methods: 
+- `body(string $body)`: Set the body of the message
+- `recipients(mixed $recipients)`: Set the recipients to which the message will be sent. This method accepts a recipient of type string or integer, or an array of recipients.
+- `transactional()`: Set the message type to TRANSACTIONAL.
+- `promotional()`: Set the message type to PROMOTIONAL.
 
-A list of all available options
+You can see more details about this concepts in [AWS Pinpoint Docs](https://docs.aws.amazon.com/pinpoint/latest/apireference/apps-application-id-messages.html#SendMessages)
 
 ## Changelog
 
@@ -62,7 +155,7 @@ $ composer test
 
 ## Security
 
-If you discover any security related issues, please email :author_email instead of using the issue tracker.
+If you discover any security related issues, please email [oscarcast.opv@gmail.com](mailto:oscarcast.opv@gmail.com) instead of using the issue tracker.
 
 ## Contributing
 
@@ -70,7 +163,7 @@ Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
 
 ## Credits
 
-- [:author_name](https://github.com/:author_username)
+- [Oscar Poemape](https://github.com/oscarcpv)
 - [All Contributors](../../contributors)
 
 ## License
