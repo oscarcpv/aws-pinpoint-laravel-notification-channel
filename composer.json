@@ -18,8 +18,8 @@
         "illuminate/support": "~8.0 || ~9.0 || ~10.0"
     },
     "require-dev": {
-        "orchestra/testbench": "^8.13",
-        "phpstan/phpstan": "^1.10"
+        "laravel/pint": "^1.13",
+        "orchestra/testbench": "^8.14"
     },
     "autoload": {
         "psr-4": {
@@ -34,8 +34,7 @@
     "scripts": {
         "test": "vendor/bin/phpunit",
         "test:coverage": "vendor/bin/phpunit --coverage-text --coverage-clover=coverage.clover",
-        "pint": "vendor/bin/pint",
-        "analyse": "vendor/bin/phpstan analyse"
+        "pint": "vendor/bin/pint"
     },
     "config": {
         "sort-packages": true
