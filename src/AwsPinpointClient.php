@@ -31,7 +31,7 @@ class AwsPinpointClient
                         'SMSMessage' => [
                             'Body' => $message->body,
                             'MessageType' => $message->type,
-                            'SenderId' => config('services.aws_pinpoint.sms.sender_id'),
+                            'SenderId' => $message->senderId ?? config('services.aws_pinpoint.sms.sender_id'),
                         ],
                     ],
                 ],

@@ -91,4 +91,12 @@ class AwsPinpointMessageTest extends TestCase
 
         $this->assertEquals($message->type, AwsPinpointMessage::PROMOTIONAL_SMS_TYPE);
     }
+
+    public function test_it_can_set_sender_id(): void
+    {
+        $message = new AwsPinpointMessage();
+        $message->senderId('TheSender');
+
+        $this->assertEquals($message->senderId, 'TheSender');
+    }
 }

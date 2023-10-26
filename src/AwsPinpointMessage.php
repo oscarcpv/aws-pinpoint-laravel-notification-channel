@@ -34,6 +34,13 @@ class AwsPinpointMessage
         return $this;
     }
 
+    public function senderId(string $senderId): self
+    {
+        $this->senderId = $senderId;
+
+        return $this;
+    }
+
     public function transactional(): self
     {
         $this->type = self::TRANSACTIONAL_SMS_TYPE;
