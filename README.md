@@ -86,6 +86,7 @@ public function toAwsPinpoint($notifiable)
 {
     return (new AwsPinpointMessage)
         ->body('Something cool')
+        ->senderId('My Company')
         ->recipients($notifiable->phone)
         ->promotional();
 } 
@@ -140,6 +141,7 @@ When you instance the `NotificationChannels\AwsPinpoint\AwsPinpointMessage` you 
 - `recipients(mixed $recipients)`: Set the recipients to which the message will be sent. This method accepts a recipient of type string or integer, or an array of recipients.
 - `transactional()`: Set the message type to TRANSACTIONAL.
 - `promotional()`: Set the message type to PROMOTIONAL.
+- `senderId(string $senderId)`: Replace the default sender ID configured in `config/services.php`.
 
 You can see more details about this concepts in [AWS Pinpoint Docs](https://docs.aws.amazon.com/pinpoint/latest/apireference/apps-application-id-messages.html#SendMessages)
 
